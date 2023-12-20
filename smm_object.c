@@ -19,7 +19,8 @@ static int smmObj_type[MAX_NODE];
 static int smmObj_credit[MAX_NODE];
 static int smmObj_energy[MAX_NODE];
 static int smmObj_noNode=0;
-
+static int smmObj_noFood=0;
+static int smmObj_noFest=0;
 
 
 //object generation
@@ -33,9 +34,24 @@ void smmObj_genNode(char* name, int type, int credit, int energy)
     smmObj_noNode++;
 }
 
+void smmObj_genFood(char* name, int energy)
+{
+    strcpy(smmObj_name[smmObj_noFood], name);
+    smmObj_energy[smmObj_noFood] = energy;
+
+    smmObj_noFood++;
+}
+
+void smmObj_genFest(char* name)
+{
+    strcpy(smmObj_name[smmObj_noFest], name);
+    
+    smmObj_noFest++;
+}
+
 char* smmObj_getNodeName(int node_nr)
 {
-    return smmObj_name[smmObj_noNode];
+    return smmObj_name[node_nr];
 }
 
 int smmObj_getNodeType(int node_nr)
@@ -43,12 +59,30 @@ int smmObj_getNodeType(int node_nr)
     return smmObj_type[node_nr];
 }
 
-#if 0
+int smmObj_getNodeEnergy(int node_nr)
+{
+    return smmObj_energy[node_nr];
+}
 
+char* smmObj_getFoodName(int food_nr)
+{
+    return smmObj_name[food_nr];
+}
+
+int smmObj_getFoodEnergy(int food_nr)
+{
+    return smmObj_energy[food_nr];
+}
+
+char* smmObj_getFestName(int Fest_nr)
+{
+    return smmObj_name[Fest_nr];
+}
 
 //member retrieving
 
 
+#if 0
 
 //element to string
 char* smmObj_getNodeName(smmNode_e type)
@@ -60,5 +94,4 @@ char* smmObj_getGradeName(smmGrade_e grade)
 {
     return smmGradeName[grade];
 }
-
 #endif

@@ -35,10 +35,16 @@
 
 //object generation
 void smmObj_genNode(char* name, int type, int credit, int energy);
+void smmObj_genFood(char* name, int energy);
+void smmObj_genFest(char* name);
 
 //member retrieving
 char* smmObj_getNodeName(int node_nr);
 int smmObj_getNodeType(int node_nr);
+int smmObj_getNodeEnergy(int node_nr);
+char* smmObj_getFoodName(int food_nr);
+int smmObj_getFoodEnergy(int food_nr);
+char* smmObj_getFestName(int Fest_nr);
 
 //element to string
 
