@@ -13,7 +13,7 @@
 #define MAX_GRADE       9
 #define MAX_NODE        100
 #define MAX_FOOD        100
-#define MAX_FEST        100
+#define MAX_FEST        100 //NODE, FOOD, FEST 배열의 최대 범위 설정 
 
 static char smmNodeName[SMMNODE_TYPE_MAX][MAX_CHARNAME] = {
        "lecture",
@@ -31,26 +31,26 @@ char* smmObj_getTypeName(int type)
 }
 
 //1. 구조체 형식 정의
-typedef struct smmObject {
+typedef struct smmObject { //smmobject라는 구조체 내 여러 자료형의 변수들 정의내리고 smmObject_t라는 실체로 나타낸다.  
        char name[MAX_CHARNAME];
        int type;
        int credit;
        int energy;
 } smmObject_t;
 
-typedef struct smmFood_t {
+typedef struct smmFood { //smmFood라는 구조체 내 여러 자료형의 변수들 정의내리고 smmFood_t라는 실체로 나타낸다.  
        char name[MAX_CHARNAME];
        int energy;
 } smmFood_t;
 
-typedef struct smmFest {
+typedef struct smmFest { //smmFest라는 구조체 내 여러 자료형의 변수들 정의내리고 smmFest_t라는 실체로 나타낸다.  
        char name[MAX_CHARNAME];
 } smmFest_t;
 
 //2. 구조체 배열 변수 정의 
-smmObject_t smm_node[MAX_NODE];
-smmObject_t smm_food[MAX_FOOD];
-smmObject_t smm_fest[MAX_FEST];
+smmObject_t smm_node[MAX_NODE]; //smmObject_t 구조체의 배열로 smm_node를 정의한다. 
+smmFood_t smm_food[MAX_FOOD]; //smmFood_t 구조체의 배열로 smm_food를 정의한다. 
+smmFest_t smm_fest[MAX_FEST]; //smmFest_t 구조체의 배열로 smm_fest를 정의한다. 
 
 
 #if 0
@@ -60,7 +60,7 @@ static int smmObj_type[MAX_NODE];
 static int smmObj_credit[MAX_NODE];
 static int smmObj_energy[MAX_NODE];
 
-#endif 
+#endif //문자열 배열 생성 대신 구조체의 배열로 관련 함수를 변경시킨다. 
 
 static int smmObj_noNode = 0;
 static int smmObj_noFood=0;
@@ -110,41 +110,43 @@ void smmObj_genFest(char* name)
     smmObj_noFest++; //void 함수 내에서는 noFest 값이 0에서 계속해서 상승, 번호가 4까지 내에서 Fest 내 문자열 순차적 출력. 
 }
 
-//3. 관련 함수 변경 
+//3. 관련 함수 변경 (Node) 
 char* smmObj_getNodeName(int node_nr)
 {
-    return smm_node[node_nr].name;
+    return smm_node[node_nr].name; //smm_node 구조체의 [node_nr] 배열에서 멤버 name의 값을 반환한다.  
 }
-//3. 관련 함수 변경
+
 int smmObj_getNodeType(int node_nr)
 {
-    return smm_node[node_nr].type;
+    return smm_node[node_nr].type; //smm_node 구조체의 [node_nr] 배열에서 멤버 type의 값을 반환한다.  
 }
 
 int smmObj_getNodeEnergy(int node_nr)
 {
-    return smm_node[node_nr].energy;
+    return smm_node[node_nr].energy; //smm_node 구조체의 [node_nr] 배열에서 멤버 energy의 값을 반환한다.  
 }
 
 int smmObj_getNodeCredit(int node_nr) // i번째 노드의 타입을 가져와 입력하면 문자열 출력되는 함수 코딩 
 {
     
-    return smm_node[node_nr].credit;
+    return smm_node[node_nr].credit; //smm_node 구조체의 [node_nr] 배열에서 멤버 credit의 값을 반환한다.  
 }
 
+//3. 관련 함수 변경 (Food) 
 char* smmObj_getFoodName(int food_nr)
 {
-    return smm_food[food_nr].name;
+    return smm_food[food_nr].name; //smm_food 구조체의 [food_nr] 배열에서 멤버 name의 값을 반환한다.  
 }
 
 int smmObj_getFoodEnergy(int food_nr)
 {
-    return smm_food[food_nr].energy;
+    return smm_food[food_nr].energy; //smm_food 구조체의 [food_nr] 배열에서 멤버 energy의 값을 반환한다.  
 }
 
+//3. 관련 함수 변경 (Fest) 
 char* smmObj_getFestName(int festival_nr)
 {
-    return smm_fest[festival_nr].name;
+    return smm_fest[festival_nr].name; //smm_fest 구조체의 [festival_nr] 배열에서 멤버 name의 값을 반환한다.  
 }
 
 
