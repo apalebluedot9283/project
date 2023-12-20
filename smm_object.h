@@ -53,6 +53,8 @@ void smmObj_genFest(char* name);
 char* smmObj_getNodeName(int node_nr);
 int smmObj_getNodeType(int node_nr);
 int smmObj_getNodeEnergy(int node_nr);
+int smmObj_getNodeCredit(int node_nr);
+
 char* smmObj_getFoodName(int food_nr);
 int smmObj_getFoodEnergy(int food_nr);
 char* smmObj_getFestName(int Fest_nr);

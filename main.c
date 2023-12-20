@@ -14,8 +14,6 @@
 #define FOODFILEPATH "marbleFoodConfig.txt"
 #define FESTFILEPATH "marbleFestivalConfig.txt"
 
-#define MAX_PLAYER     100
-
 //board configuration parameters
 static int board_nr;
 static int food_nr;
@@ -45,7 +43,7 @@ void generatePlayers(int n, int initEnergy) //generate a new player, n명의 플레�
      for (i=0;i<n;i++) //플레이어가 n번 있다고 가정한다. 
      {
          //input name
-         printf("Input your name:"); 
+         printf("Input player %i's name:", i); 
          scanf("%s", player_name[i]);
          fflush(stdin); //while 문 사용 시에 buffer 안에 잔재가 남아 이름으로 들어갈 수도 있다. 
 
@@ -124,13 +122,18 @@ int main(int argc, const char * argv[]) {
     {
         //store the parameter set
         smmObj_genNode(name, type, credit, energy); //main 함수에서 선언한 name, type, credit, energy를 매개변수 자리에 대입한다. 
+        if (type == SMMNODE_TYPE_HOME)
+           initEnergy = energy;
         board_nr++; // board_nr=0인 상태에서 시작. 
     }
     fclose(fp); //BOARDFILEPATH 파일을 닫는다.  
     printf("Total number of board nodes : %i\n", board_nr); // 네 가지 데이터를 성공적으로 읽은 횟수 16번 
 
     for (i = 0;i<board_nr;i++) // main 함수에서 선언한 변수i는 성공적으로 네 가지 데이터를 읽은 횟수만큼 더해지고 for문은 반복된다.  
-        printf("node %i : %s, %i(%s)\n", i, smmObj_getNodeName(i), smmObj_getNodeType(i), smmObj_getTypeName(smmObj_getNodeType(i))); 
+         printf("node %i : %s, %i(%s), credit %i, energy %i\n", 
+                     i, smmObj_getNodeName(i), 
+                     smmObj_getNodeType(i), smmObj_getTypeName(smmObj_getNodeType(i)),
+                     smmObj_getNodeCredit(i), smmObj_getNodeEnergy(i));
         //입력받은 변수 i 값의 노드 이름을 문자열로 출력, 노드 유형(번호)를 숫자로 출력,  숫자에 따른 lecture, restaurant 등을 문자열로 출력. 
 
     printf("(%s)", smmObj_getTypeName(SMMNODE_TYPE_LECTURE)); //lecture 강의 내에서 유형 이름 출력. 
