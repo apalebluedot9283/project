@@ -7,7 +7,6 @@
 
 #include <time.h>
 #include <string.h>
-#include "smm_object.h"
 #include "smm_database.h"
 #include "smm_common.h"
 #define BOARDFILEPATH "marbleBoardConfig.txt"
@@ -29,13 +28,8 @@ typedef struct player { //player(tag) 구조체 형태의 player_t 변수 선언
         int flag_graduate; //졸업여부 
 } player_t;
 
-static player_t cur_player[MAX_PLAYER]; //player_t 구조체에서 energy, position, name, accumCreditm flag_graduate 변수들 배열로 묶는다. 
-
-#if 0
-static int player_energy[MAX_PLAYER];
-static int player_position[MAX_PLAYER];
-static char player_name[MAX_PLAYER][MAX_CHARNAME]; // 나열되어 있는 배열 중 i번째 노드의 플레이어 이름과 위치, 에너지  
-#endif
+static player_t *cur_player;
+//static player_t cur_player[MAX_PLAYER]; //player_t 구조체에서 energy, position, name, accumCreditm flag_graduate 변수들 배열로 묶는다. 
 
 //function prototypes
 #if 0
@@ -45,6 +39,17 @@ float calcAverageGrade(int player); //calculate average grade of the player
 smmGrade_e takeLecture(int player, char *lectureName, int credit); //take the lecture (insert a grade of the player) 수강이력 
 void* findGrade(int player, char *lectureName); //find the grade from the player's grade history
 #endif
+
+void printGrades(int player)
+{
+     int i;
+     void *gradePtr;
+     for (i=0;i<smmdb_len(LISTNO_OFFSET_GRADE + player);i++)
+     {
+         gradePtr = smmdb_getData(LISTNO_OFFSET_GRADE + player, i);
+         printf("%s : %i\n", smmObj_getNodeName(gradePtr), smmObj_getNodeGrade(gradePtr));
+     }
+}
 
 void printPlayerStatus(void) //print all player status at the beginning of each turn 플레이어들의 해당 턴이 모두 끝나고 새로운 턴이 돌아왔을 때 플레이어들의 상태 출력 
 {
@@ -84,10 +89,6 @@ void generatePlayers(int n, int initEnergy) //generate a new player, n명의 플레�
      }
 }
 
-void printGrades(int player){ //print grade history of the player Player 정보 출력 함수 구현 턴을 돌때마다 플레이어의 정보를 찍는 걸 printf를 이용해서 함수 작성 
-                              //턴 시작 시 모든 플레이어의 상태 (위치, 실험 중 상태, 누적 학점, 현재 에너지) 출력해야. 
-}
-
 int rolldie(int player) // 주사위 굴리기 
 {
     char c;
@@ -95,7 +96,7 @@ int rolldie(int player) // 주사위 굴리기
     c = getchar(); //입력된 순으로 플레이어가 돌아가면서 주사위를 던지고 이동한다. 
     fflush(stdin);
 
-#if 0
+#if 1
     if (c == 'g')
         printGrades(player);
 #endif
@@ -111,25 +112,32 @@ int ramdom() {
 void actionNode(int player)
 
 {
-     int type = smmObj_getNodeType( cur_player[player].position ); //player_t 구조체에서 여러 변수들 묶었던 cur_player 배열 내 position 변수의 값을 출력한다. 
+     void *boardPtr = smmdb_getData(LISTNO_NODE, cur_player[player].position );
+     //int type = smmObj_getNodeType( cur_player[player].position );
+     int type = smmObj_getNodeType( boardPtr );
+     char name = smmObj_getNodeName( boardPtr );
+     void *gradePtr;
+     
      cur_player[player].position %= 16;
      switch (type) {
-        // 학점은 강의 노드에서만 유의미하며, 강의 수강 후 플레이어가 얻게 되는 학점 수다.
-        // 각 플레이어는 자신의 에너지를 관리하면서 적절하게 전공수업을 듣고 졸업 학점(credit)을 채우는 것을 최종 목표로 한다.
-        // 현재 에너지가 소요에너지 이상 있고 이전에 듣지 않은 강의이면 수강 가능하며, 수강 혹은 드랍을 선택할 수 있다.
-        // 수강하면 성적이 A+, A0, A-, B+..... 중 하나가 랜덤으로 나온다.
+        /* 학점은 강의 노드에서만 유의미하며, 강의 수강 후 플레이어가 얻게 되는 학점 수다.
+         각 플레이어는 자신의 에너지를 관리하면서 적절하게 전공수업을 듣고 졸업 학점(credit)을 채우는 것을 최종 목표로 한다.
+         현재 에너지가 소요에너지 이상 있고 이전에 듣지 않은 강의이면 수강 가능하며, 수강 혹은 드랍을 선택할 수 있다.
+         수강하면 성적이 A+, A0, A-, B+..... 중 하나가 랜덤으로 나온다. */
         case SMMNODE_TYPE_LECTURE:
             {
                 // 현재 에너지가 소요에너지 이상이고, 이전에 듣지 않은 강의인지 여부를 확인
-                if (cur_player[player].energy >= smmObj_getNodeEnergy(cur_player[player].position)) {
+                if (cur_player[player].energy >= smmObj_getNodeEnergy(boardPtr)) 
+                   {
                     printf("Do you want to attend the lecture? (1: Attend, 2: Drop): ");
                     int choice;
                     scanf("%d", &choice);
 
-                    if (choice == 1) {
+                    if (choice == 1) 
+                    {
                         // 수강 선택
-                        cur_player[player].accumCredit += smmObj_getNodeCredit(cur_player[player].position);
-                        cur_player[player].energy -= smmObj_getNodeEnergy(cur_player[player].position);
+                        cur_player[player].accumCredit += smmObj_getNodeCredit(boardPtr);
+                        cur_player[player].energy -= smmObj_getNodeEnergy(boardPtr);
 
                         // 성적 랜덤으로 결정하고 출력 (A+, A0, A-, B+ 등)
                         char* grades[] = {"A+", "A0", "A-", "B+", "B0", "B-", "C+", "C0", "C-"};
@@ -149,13 +157,13 @@ void actionNode(int player)
         /*case restaurant: 에너지는 강의 수강 혹은 실험실에의 실험 시 소요되거나 식당 혹은 집에서 충전된다. 
         식당에서는 보충 에너지만큼 플레이어의 현재 에너지가 더해진다. */
           case SMMNODE_TYPE_RESTAURANT:
-              cur_player[player].energy += smmObj_getNodeEnergy( cur_player[player].position );
+              cur_player[player].energy += smmObj_getNodeEnergy(boardPtr);
               break;
         /*case home: 첫번째 노드 (입력 파일의 첫줄)은 항상 유형이 집이며, 마지막 노드의 다음은 첫번째 노드로 연결되는 구조로 구성해야 한다.
         지나가는 순간 지정된 보충 에너지만큼 현재 에너지에 더해진다. */
           case SMMNODE_TYPE_HOME:
         // 주사위를 굴려서 0에서 15까지의 노드를 이동하는 게임
-              cur_player[player].energy += smmObj_getNodeEnergy(cur_player[player].position);
+              cur_player[player].energy += smmObj_getNodeEnergy(boardPtr);
               break;
         //case gotolab: 실험중 상태로 전환되면서 laboratory로 이동한다. 
         //주사위 눈 범위에서 criterion을 랜덤으로 지정한다. 
@@ -170,7 +178,7 @@ void actionNode(int player)
         단순히 laboratory 노드에 머무른다고 실험중 상태가 되지 않으며, 실험 노드에 머물러야 실험중 상태가 된다.
         실험 시도마다 소요 에너지만큼 소요하며, 이로 인해 에너지가 음수가 될 수 있다.*/
           case SMMNODE_TYPE_LABORATORY:
-              cur_player[player].energy -= smmObj_getNodeEnergy(cur_player[player].position);
+              cur_player[player].energy -= smmObj_getNodeEnergy(boardPtr);
               srand(time(NULL));
               int result = ramdom();
 
@@ -201,23 +209,29 @@ void actionNode(int player)
 
               printf("You are at the Festival node. Mission: %s\n", smmObj_getFestName(festIndex));
               break;
+              //grade generation
+              gradePtr = smmObj_genObject(name, smmObjType_grade, 0, smmObj_getNodeCredit( boardPtr ), 0, "A+");
+              smmdb_addTail(LISTNO_OFFSET_GRADE + player, gradePtr);
  
-        default:
-            break;
+              break;
+              
+          default:
     }
 }
 
 void goForward(int player, int step) //make player go "step" steps on the board (check if player is graduated)
                                      //Player 이동 함수 구현, 다음 주 상어 게임을 하면 구현 가능 
 {
+     void *boardPtr;                 
      cur_player[player].position += step; //player_t 구조체 내 변수를 묶어놓은 cur_player 배열에서 position 변수에 step 값을 더한다. 
+     boardPtr = smmdb_getData(LISTNO_NODE, cur_player[player].position );
      
      // 만약 위치가 15를 넘어가면 다시 0으로 되돌린다.
-    cur_player[player].position %= 16;
+     cur_player[player].position %= 16;
 
      printf("%s go to node %i (name: %s)\n", 
                 cur_player[player].name, cur_player[player].position,
-                smmObj_getNodeName(cur_player[player].position));
+                smmObj_getNodeName(boardPtr));
                 //player_t 구조체 내 변수를 묶어놓은 cur_player 배열에서 name 변수와 position 변수, 우리집 처럼 노드 이름을 출력한다.  
 }
 
@@ -252,7 +266,9 @@ int main(int argc, const char * argv[]) {
     while ( fscanf(fp, "%s %i %i %i", name, &type, &credit, &energy) == 4 ) //fscanf로 네 가지 데이터를 읽어오기, fscanf 함수의 출력은 성공적으로 읽은 값의 개수와 같다. read a node parameter set
     {
         //store the parameter set
-        smmObj_genNode(name, type, credit, energy); //main 함수에서 선언한 name, type, credit, energy를 매개변수 자리에 대입한다. 
+        //(char* name, smmObjType_e objType, int type, int credit, int energy, smmObjGrade_e grade) main 함수에서 선언한 name, type, credit, energy를 매개변수 자리에 대입한다. 
+        void *boardObj = smmObj_genObject(name, smmObjType_board, type, credit, energy, 0);
+        smmdb_addTail(LISTNO_NODE, boardObj);
         if (type == SMMNODE_TYPE_HOME)
            initEnergy = energy;
         board_nr++; // board_nr=0인 상태에서 시작. 
@@ -261,13 +277,16 @@ int main(int argc, const char * argv[]) {
     printf("Total number of board nodes : %i\n", board_nr); // 네 가지 데이터를 성공적으로 읽은 횟수 16번 
 
     for (i = 0;i<board_nr;i++) // main 함수에서 선언한 변수i는 성공적으로 네 가지 데이터를 읽은 횟수만큼 더해지고 for문은 반복된다.  
+    {
+         void *boardObj = smmdb_getData(LISTNO_NODE, i);
+         
          printf("node %i : %s, %i(%s), credit %i, energy %i\n", 
-                     i, smmObj_getNodeName(i), 
-                     smmObj_getNodeType(i), smmObj_getTypeName(smmObj_getNodeType(i)),
-                     smmObj_getNodeCredit(i), smmObj_getNodeEnergy(i));
-        //입력받은 변수 i 값의 노드 이름을 문자열로 출력, 노드 유형(번호)를 숫자로 출력,  숫자에 따른 lecture, restaurant 등을 문자열로 출력. 
-
-    printf("(%s)", smmObj_getTypeName(SMMNODE_TYPE_LECTURE)); //lecture 강의 내에서 유형 이름 출력. 
+                     i, smmObj_getNodeName(boardObj), 
+                     smmObj_getNodeType(boardObj), smmObj_getTypeName(smmObj_getNodeType(boardObj)),
+                     smmObj_getNodeCredit(boardObj), smmObj_getNodeEnergy(boardObj));
+    }
+    //입력받은 변수 i 값의 노드 이름을 문자열로 출력, 노드 유형(번호)를 숫자로 출력,  숫자에 따른 lecture, restaurant 등을 문자열로 출력. 
+    //printf("(%s)", smmObj_getTypeName(SMMNODE_TYPE_LECTURE)); //lecture 강의 내에서 유형 이름 출력. 
 
     //2. food card config 
     if ((fp = fopen(FOODFILEPATH,"r")) == NULL)
@@ -324,6 +343,7 @@ int main(int argc, const char * argv[]) {
     while (player_nr < 0 || player_nr >  MAX_PLAYER); //끝나는 조건을 반대로 걸어 반복시킨다. 
     //while 문은 조건에 부합하지 않으면 반복문 탈출, do-while 문은 조건 부합해야 탈출. MAX_PLAYER=100 main.c에 선언. 
 
+    cur_player = (player_t*)malloc(player_nr*sizeof(player_t));
     generatePlayers(player_nr, initEnergy); //i에 따른 player_energy[i]의 값에 따라 initEnergy 값 달라진다. 
 
     //3. SM Marble game starts ---------------------------------------------------------------------------------
@@ -349,29 +369,33 @@ int main(int argc, const char * argv[]) {
         turn = (turn + 1)%player_nr;
         
         // Check if any player has accumulated enough credits to graduate
-        if (cur_player[turn].accumCredit >= GRADUATE_CREDIT) {
-        printf("%s has graduated!\n", cur_player[turn].name);
+        if (cur_player[turn].accumCredit >= GRADUATE_CREDIT) 
+        {
+            printf("%s has graduated!\n", cur_player[turn].name);
         
-        int i;
+            int i;
         
         // Print the details of the courses taken
-        for (i = 0; i < board_nr; i++) {
-            if (smmObj_getNodeType(i) == SMMNODE_TYPE_LECTURE) {
-                printf("Course: %s, Credit: %d, Grade: %s\n",
-                       smmObj_getNodeName(i),
-                       smmObj_getNodeCredit(i),
-                       "A+"); // 여기서 성적은 랜덤이 아닌 A+로 가정
+            for (i = 0; i < board_nr; i++)
+            {
+                if (smmObj_getNodeType(i) == SMMNODE_TYPE_LECTURE)
+                {
+                    printf("Course: %s, Credit: %d, Grade: %s\n",
+                           smmObj_getNodeName(i),
+                           smmObj_getNodeCredit(i),
+                           "A+"); // 여기서 성적은 랜덤이 아닌 A+로 가정
+                }
             }
-        }
 
         // Break out of the loop
         break;
-    }
+        }
 
 
     } /*게임 종료 조건: 플레이어 중 한명이 GRADUATE_CREDIT 이상의 학점 이수하고 집으로 이동하면 게임이 즉시 종료됨.
-      GRADUATE_CREDIT = 30, MAX_DIE = 6 */
-
+      GRADUATE_CREDIT = 30*/
+      
+    free(cur_player);
     system("PAUSE");
     return 0;
    
