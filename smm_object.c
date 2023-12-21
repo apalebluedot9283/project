@@ -104,13 +104,7 @@ void smmObj_genFood(char* name, int energy)
     ptr = (smmFood_t*)malloc(sizeof(smmFood_t));
 
     strcpy(ptr->name, name);
-    ptr->objType = objType;
-    ptr->type = type;
-    ptr->credit = credit;
     ptr->energy = energy;
-    ptr->grade = grade;
-
-    return ptr;
 }
 
 void smmObj_genFest(char* name)
@@ -120,13 +114,6 @@ void smmObj_genFest(char* name)
     ptr = (smmFood_t*)malloc(sizeof(smmFood_t));
 
     strcpy(ptr->name, name);
-    ptr->objType = objType;
-    ptr->type = type;
-    ptr->credit = credit;
-    ptr->energy = energy;
-    ptr->grade = grade;
-
-    return ptr;
 }
 
 //3. 관련 함수 변경 (Node) 
@@ -153,7 +140,7 @@ int smmObj_getNodeCredit(void* obj) // i번째 노드의 타입을 가져와 입력하면 문자�
 {
       smmObject_t* ptr = (smmObject_t*)obj;
 
-      return ptr->credit;}
+      return ptr->credit;
 }
 
 //3. 관련 함수 변경 (Food) 
