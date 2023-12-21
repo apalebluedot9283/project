@@ -30,7 +30,7 @@ char* smmObj_getTypeName(int type)
       return (char*)smmNodeName[type]; 
 }
 
-//1. 구조체 형식 정의
+//1. 구조체 형식 정의 main.c에게 구조체의 구조를 보이지 않게 코딩 
 typedef struct smmObject { //smmobject라는 구조체 내 여러 자료형의 변수들 정의내리고 smmObject_t라는 실체로 나타낸다.  
        char name[MAX_CHARNAME];
        int type;
@@ -48,10 +48,9 @@ typedef struct smmFest { //smmFest라는 구조체 내 여러 자료형의 변수들 정의내리고
 } smmFest_t;
 
 //2. 구조체 배열 변수 정의 
-smmObject_t smm_node[MAX_NODE]; //smmObject_t 구조체의 배열로 smm_node를 정의한다. 
-smmFood_t smm_food[MAX_FOOD]; //smmFood_t 구조체의 배열로 smm_food를 정의한다. 
-smmFest_t smm_fest[MAX_FEST]; //smmFest_t 구조체의 배열로 smm_fest를 정의한다. 
-
+static smmObject_t smm_node[MAX_NODE]; //smmObject_t 구조체의 배열로 smm_node를 정의한다. 
+static smmFood_t smm_food[MAX_FOOD]; //smmFood_t 구조체의 배열로 smm_food를 정의한다. 
+static smmFest_t smm_fest[MAX_FEST]; //smmFest_t 구조체의 배열로 smm_fest를 정의한다. 
 
 #if 0
 
@@ -60,7 +59,7 @@ static int smmObj_type[MAX_NODE];
 static int smmObj_credit[MAX_NODE];
 static int smmObj_energy[MAX_NODE];
 
-#endif //문자열 배열 생성 대신 구조체의 배열로 관련 함수를 변경시킨다. 
+#endif //전역변수 배열로 정의한 각 요소들을 구조체의 배열로 관련 함수를 바꾼다. 
 
 static int smmObj_noNode = 0;
 static int smmObj_noFood=0;
